@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
         Number::useCurrency('EUR');
 
         Number::macro('currencyCents', function (int|float $number, string $in = '', ?string $locale = null) {
-            return Number::currency((int) $number / 100, $in, $locale);
+            return currency_amount((int) $number, $in, $locale);
         });
 
         Password::defaults(function () {

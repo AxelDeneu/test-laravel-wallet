@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Notification;
+
 use App\Actions\PerformWalletTransaction;
 use App\Enums\WalletTransactionType;
 use App\Exceptions\InsufficientBalance;
@@ -87,4 +89,29 @@ test('force a debit transaction when balance is insufficient', function () {
         'type' => WalletTransactionType::DEBIT,
         'reason' => 'test',
     ]);
+});
+
+test('the user should receive an email if its balance is below 10 after transaction', function () {
+    Notification::fake();
+
+    $wallet = Wallet::factory()
+        ->forUser()
+        ->create();
+
+    $this->action->execute(wallet: $wallet, type: WalletTransactionType::DEBIT, amount: 10, reason: 'test', force: true);
+
+    Notification::assertSentTo($wallet->user, \App\Notifications\LowBalance::class);
+});
+
+test('the user should not receive an email if its balance is greater than 10 after transaction', function () {
+    Notification::fake();
+
+    $wallet = Wallet::factory()
+        ->balance(2000)
+        ->forUser()
+        ->create();
+
+    $this->action->execute(wallet: $wallet, type: WalletTransactionType::DEBIT, amount: 10, reason: 'test', force: true);
+
+    Notification::assertNotSentTo($wallet->user, \App\Notifications\LowBalance::class);
 });

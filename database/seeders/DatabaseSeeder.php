@@ -16,14 +16,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->has(Wallet::factory()->richChillGuy())->create([
-            'name' => 'Rich Chill Guy',
-            'email' => 'rich.chill.guy@test.fr',
-        ]);
+        User::factory()
+            ->has(Wallet::factory()->richChillGuy())
+            ->hasRecurringTransfers(4)
+            ->create([
+                'name' => 'Rich Chill Guy',
+                'email' => 'rich.chill.guy@test.fr',
+            ]);
 
-        User::factory()->has(Wallet::factory())->create([
-            'name' => 'Another Guy',
-            'email' => 'another.guy@test.fr',
-        ]);
+        User::factory()
+            ->has(Wallet::factory())
+            ->create([
+                'name' => 'Another Guy',
+                'email' => 'another.guy@test.fr',
+            ]);
     }
 }

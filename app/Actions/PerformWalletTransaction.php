@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Enums\WalletTransactionType;
+use App\Events\NewTransaction;
 use App\Exceptions\InsufficientBalance;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
@@ -33,6 +34,9 @@ readonly class PerformWalletTransaction
 
             $this->updateWallet($wallet, $type, $amount);
 
+            // trigger an event for each new transaction to be able to send a notification if the user's balance is low
+            $this->triggerNewTransactionEvent($wallet, $type);
+
             return $transaction;
         });
     }
@@ -57,5 +61,13 @@ readonly class PerformWalletTransaction
         if ($wallet->balance < $amount) {
             throw new InsufficientBalance($wallet, $amount);
         }
+    }
+
+    /**
+     * @throws Throwable
+     */
+    protected function triggerNewTransactionEvent(Wallet $wallet, WalletTransactionType $type): void
+    {
+        event(new NewTransaction($wallet, $type));
     }
 }
